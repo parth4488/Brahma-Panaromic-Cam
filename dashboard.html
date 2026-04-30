@@ -459,28 +459,48 @@
       <div class="panel-title">// camera inputs</div>
       <div class="cam-status">
         <div class="cam-row">
-          <span class="cam-name">CAM L</span>
-          <span class="cam-badge off" id="badge-l">OFFLINE</span>
+          <span class="cam-name">CAM 1 — North</span>
+          <span class="cam-badge off" id="badge-0">OFFLINE</span>
         </div>
         <div class="cam-row">
-          <span class="cam-name">CAM R</span>
-          <span class="cam-badge off" id="badge-r">OFFLINE</span>
+          <span class="cam-name">CAM 2 — East</span>
+          <span class="cam-badge off" id="badge-1">OFFLINE</span>
+        </div>
+        <div class="cam-row">
+          <span class="cam-name">CAM 3 — South</span>
+          <span class="cam-badge off" id="badge-2">OFFLINE</span>
+        </div>
+        <div class="cam-row">
+          <span class="cam-name">CAM 4 — West</span>
+          <span class="cam-badge off" id="badge-3">OFFLINE</span>
         </div>
       </div>
       <div class="fov-diagram">
-        <svg viewBox="0 0 220 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="30,45 5,10 55,10" fill="rgba(0,200,255,0.08)" stroke="rgba(0,200,255,0.4)" stroke-width="1"/>
-          <polygon points="30,45 5,80 55,80" fill="rgba(0,200,255,0.08)" stroke="rgba(0,200,255,0.4)" stroke-width="1"/>
-          <circle cx="30" cy="45" r="5" fill="rgba(0,200,255,0.6)"/>
-          <text x="30" y="88" fill="rgba(0,200,255,0.5)" font-size="7" text-anchor="middle" font-family="monospace">CAM L</text>
-          <polygon points="190,45 165,10 215,10" fill="rgba(0,255,157,0.08)" stroke="rgba(0,255,157,0.4)" stroke-width="1"/>
-          <polygon points="190,45 165,80 215,80" fill="rgba(0,255,157,0.08)" stroke="rgba(0,255,157,0.4)" stroke-width="1"/>
-          <circle cx="190" cy="45" r="5" fill="rgba(0,255,157,0.6)"/>
-          <text x="190" y="88" fill="rgba(0,255,157,0.5)" font-size="7" text-anchor="middle" font-family="monospace">CAM R</text>
-          <rect x="85" y="38" width="50" height="14" rx="2" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-          <text x="110" y="48" fill="rgba(255,255,255,0.4)" font-size="7" text-anchor="middle" font-family="monospace">STITCH</text>
-          <line x1="55" y1="45" x2="85" y2="45" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" stroke-dasharray="4,3"/>
-          <line x1="135" y1="45" x2="165" y2="45" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" stroke-dasharray="4,3"/>
+        <svg viewBox="0 0 220 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- CAM 1 North -->
+          <polygon points="25,45 10,20 40,20" fill="rgba(0,200,255,0.08)" stroke="rgba(0,200,255,0.4)" stroke-width="1"/>
+          <circle cx="25" cy="45" r="4" fill="rgba(0,200,255,0.6)"/>
+          <text x="25" y="95" fill="rgba(0,200,255,0.5)" font-size="6" text-anchor="middle" font-family="monospace">NORTH</text>
+          <!-- CAM 2 East -->
+          <polygon points="75,45 60,20 90,20" fill="rgba(0,255,157,0.08)" stroke="rgba(0,255,157,0.4)" stroke-width="1"/>
+          <circle cx="75" cy="45" r="4" fill="rgba(0,255,157,0.6)"/>
+          <text x="75" y="95" fill="rgba(0,255,157,0.5)" font-size="6" text-anchor="middle" font-family="monospace">EAST</text>
+          <!-- CAM 3 South -->
+          <polygon points="145,45 130,20 160,20" fill="rgba(255,165,0,0.08)" stroke="rgba(255,165,0,0.4)" stroke-width="1"/>
+          <circle cx="145" cy="45" r="4" fill="rgba(255,165,0,0.6)"/>
+          <text x="145" y="95" fill="rgba(255,165,0,0.5)" font-size="6" text-anchor="middle" font-family="monospace">SOUTH</text>
+          <!-- CAM 4 West -->
+          <polygon points="195,45 180,20 210,20" fill="rgba(180,0,180,0.08)" stroke="rgba(180,0,180,0.4)" stroke-width="1"/>
+          <circle cx="195" cy="45" r="4" fill="rgba(180,0,180,0.6)"/>
+          <text x="195" y="95" fill="rgba(180,0,180,0.5)" font-size="6" text-anchor="middle" font-family="monospace">WEST</text>
+          <!-- Stitch box -->
+          <rect x="85" y="55" width="50" height="14" rx="2" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <text x="110" y="65" fill="rgba(255,255,255,0.4)" font-size="7" text-anchor="middle" font-family="monospace">STITCH</text>
+          <!-- Connecting lines -->
+          <line x1="25" y1="49" x2="85" y2="62" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" stroke-dasharray="4,3"/>
+          <line x1="75" y1="49" x2="85" y2="62" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" stroke-dasharray="4,3"/>
+          <line x1="145" y1="49" x2="135" y2="62" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" stroke-dasharray="4,3"/>
+          <line x1="195" y1="49" x2="135" y2="62" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" stroke-dasharray="4,3"/>
         </svg>
       </div>
     </div>
@@ -552,8 +572,10 @@
     setPill('pill-server', false);
     $('m-fps').textContent = '—';
     $('m-mode').textContent = '—';
-    $('badge-l').className = 'cam-badge off'; $('badge-l').textContent = 'OFFLINE';
-    $('badge-r').className = 'cam-badge off'; $('badge-r').textContent = 'OFFLINE';
+    for (let i = 0; i < 4; i++) {
+      const b = $('badge-' + i);
+      if (b) { b.className = 'cam-badge off'; b.textContent = 'OFFLINE'; }
+    }
     log('Disconnected', 'err');
   }
 
@@ -586,11 +608,13 @@
 
       const setbadge = (id, ok) => {
         const el = $(id);
+        if (!el) return;
         el.className = 'cam-badge ' + (ok ? 'ok' : 'off');
         el.textContent = ok ? 'ONLINE' : 'OFFLINE';
       };
-      setbadge('badge-l', d.left_ok);
-      setbadge('badge-r', d.right_ok);
+      if (d.cam_ok) {
+        d.cam_ok.forEach((ok, i) => setbadge('badge-' + i, ok));
+      }
     } catch {
       setPill('pill-server', false);
     }
