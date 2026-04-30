@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRAHMA — Panoramic Camera</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #080c10;
+    --surface:   #0d1520;
+    --border:    #1a2e44;
+    --accent:    #00c8ff;
+    --accent2:   #00ff9d;
+    --warn:      #ff6b35;
+    --text:      #c8e0f0;
+    --muted:     #4a6a85;
+    --font-ui:   'Rajdhani', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .logo-icon::before {
+    content: '';
+    position: absolute;
+    width: 20px; height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .logo-icon::after {
+    content: '';
+    position: absolute;
+    width: 2px; height: 20px;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  .logo-text {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,200,255,0.4);
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    margin-top: -2px;
+  }
+
+  /* ---- STATUS BAR ---- */
+  .statusbar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--bg);
+    transition: all 0.3s;
+  }
+  .status-pill.ok  { border-color: var(--accent2); color: var(--accent2); }
+  .status-pill.err { border-color: var(--warn);    color: var(--warn); }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ---- MAIN LAYOUT ---- */
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  /* ---- VIEWER ---- */
+  .viewer-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 12px;
+    border-right: 1px solid var(--border);
+  }
+
+  .viewer-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .viewer-wrap {
+    position: relative;
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    flex: 1;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .viewer-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .seam-line {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: rgba(0,200,255,0.15);
+    pointer-events: none;
+  }
+
+  .viewer-hud {
+    position: absolute;
+    top: 10px; left: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: rgba(0,200,255,0.6);
+    pointer-events: none;
+  }
+
+  .corner-tl, .corner-tr, .corner-bl, .corner-br {
+    position: absolute;
+    width: 14px; height: 14px;
+    pointer-events: none;
+  }
+  .corner-tl { top: 6px; left: 6px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+  .corner-tr { top: 6px; right: 6px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+  .corner-bl { bottom: 6px; left: 6px; border-bottom: 2px solid var(--accent); border-left: 2px solid var(--accent); }
+  .corner-br { bottom: 6px; right: 6px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+
+  .no-stream {
+    text-align: center;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    display: none;
+  }
+
+  /* ---- CONTROLS ---- */
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 7px 18px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { border-color: var(--accent); color: var(--accent); }
+  .btn.primary:hover { background: rgba(0,200,255,0.08); }
+  .btn.danger { border-color: var(--warn); color: var(--warn); }
+  .btn.active { background: rgba(0,200,255,0.1); border-color: var(--accent); color: var(--accent); }
+
+  .server-url {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .server-url label { font-size: 12px; color: var(--muted); }
+  .server-url input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 5px 10px;
+    width: 200px;
+  }
+  .server-url input:focus { outline: none; border-color: var(--accent); }
+
+  /* ---- SIDE PANEL ---- */
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+  }
+
+  .panel-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* ---- METRICS ---- */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .metric {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px;
+    text-align: center;
+  }
+  .metric-val {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .metric-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* ---- CAM STATUS ---- */
+  .cam-status {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cam-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+  .cam-name {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .cam-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 2px;
+  }
+  .cam-badge.ok  { background: rgba(0,255,157,0.1); color: var(--accent2); border: 1px solid rgba(0,255,157,0.3); }
+  .cam-badge.off { background: rgba(255,107,53,0.1); color: var(--warn); border: 1px solid rgba(255,107,53,0.3); }
+
+  /* ---- LOG ---- */
+  .log-area {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px;
+    height: 180px;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 3px;
+  }
+  .log-entry { line-height: 1.4; }
+  .log-entry.info  { color: var(--accent); }
+  .log-entry.ok    { color: var(--accent2); }
+  .log-entry.err   { color: var(--warn); }
+
+  /* ---- SCAN LINE EFFECT ---- */
+  .viewer-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* ---- FOV DIAGRAM ---- */
+  .fov-diagram {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .fov-diagram svg { width: 100%; max-width: 220px; }
+
+  /* fullscreen */
+  .viewer-wrap.fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    border-radius: 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon"></div>
+    <div>
+      <div class="logo-text">BRAHMA</div>
+      <div class="logo-sub">Panoramic Vision System</div>
+    </div>
+  </div>
+  <div class="statusbar">
+    <div class="status-pill" id="pill-stream">
+      <span class="dot"></span>STREAM
+    </div>
+    <div class="status-pill" id="pill-server">
+      <span class="dot"></span>SERVER
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- VIEWER -->
+  <div class="viewer-panel">
+    <div class="viewer-label">▶ PANORAMIC OUTPUT — LIVE STITCH</div>
+
+    <div class="viewer-wrap" id="viewer">
+      <img id="stream-img" src="" alt="panoramic stream" onerror="onStreamError()" onload="onStreamLoad()" style="display:none;">
+      <div class="no-stream" id="no-stream">
+        <div style="font-size:28px;margin-bottom:8px;color:var(--border);">◉</div>
+        Enter server URL below and press Connect
+      </div>
+      <div class="seam-line" id="seam-line" style="display:none;"></div>
+      <div class="corner-tl"></div>
+      <div class="corner-tr"></div>
+      <div class="corner-bl"></div>
+      <div class="corner-br"></div>
+      <div class="viewer-hud" id="hud">—</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn primary" onclick="connectStream()">Connect</button>
+      <button class="btn danger"  onclick="disconnectStream()">Disconnect</button>
+      <button class="btn" onclick="takeSnapshot()">Snapshot</button>
+      <button class="btn" id="btn-seam" onclick="toggleSeam()">Seam Line</button>
+      <button class="btn" onclick="toggleFullscreen()">Fullscreen</button>
+
+      <div class="server-url">
+        <label>SERVER</label>
+        <input type="text" id="server-url" value="http://localhost:5050" placeholder="http://ip:5050">
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel">
+
+    <div class="panel-section">
+      <div class="panel-title">// metrics</div>
+      <div class="metric-grid">
+        <div class="metric">
+          <div class="metric-val" id="m-fps">—</div>
+          <div class="metric-label">FPS</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="m-res">—</div>
+          <div class="metric-label">RESOLUTION</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="m-mode" style="font-size:14px;padding-top:4px;">—</div>
+          <div class="metric-label">MODE</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="m-uptime">0s</div>
+          <div class="metric-label">UPTIME</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">// camera inputs</div>
+      <div class="cam-status">
+        <div class="cam-row">
+          <span class="cam-name">CAM L</span>
+          <span class="cam-badge off" id="badge-l">OFFLINE</span>
+        </div>
+        <div class="cam-row">
+          <span class="cam-name">CAM R</span>
+          <span class="cam-badge off" id="badge-r">OFFLINE</span>
+        </div>
+      </div>
+      <div class="fov-diagram">
+        <svg viewBox="0 0 220 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="30,45 5,10 55,10" fill="rgba(0,200,255,0.08)" stroke="rgba(0,200,255,0.4)" stroke-width="1"/>
+          <polygon points="30,45 5,80 55,80" fill="rgba(0,200,255,0.08)" stroke="rgba(0,200,255,0.4)" stroke-width="1"/>
+          <circle cx="30" cy="45" r="5" fill="rgba(0,200,255,0.6)"/>
+          <text x="30" y="88" fill="rgba(0,200,255,0.5)" font-size="7" text-anchor="middle" font-family="monospace">CAM L</text>
+          <polygon points="190,45 165,10 215,10" fill="rgba(0,255,157,0.08)" stroke="rgba(0,255,157,0.4)" stroke-width="1"/>
+          <polygon points="190,45 165,80 215,80" fill="rgba(0,255,157,0.08)" stroke="rgba(0,255,157,0.4)" stroke-width="1"/>
+          <circle cx="190" cy="45" r="5" fill="rgba(0,255,157,0.6)"/>
+          <text x="190" y="88" fill="rgba(0,255,157,0.5)" font-size="7" text-anchor="middle" font-family="monospace">CAM R</text>
+          <rect x="85" y="38" width="50" height="14" rx="2" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <text x="110" y="48" fill="rgba(255,255,255,0.4)" font-size="7" text-anchor="middle" font-family="monospace">STITCH</text>
+          <line x1="55" y1="45" x2="85" y2="45" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" stroke-dasharray="4,3"/>
+          <line x1="135" y1="45" x2="165" y2="45" stroke="rgba(255,255,255,0.2)" stroke-width="0.5" stroke-dasharray="4,3"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="panel-section" style="flex:1;">
+      <div class="panel-title">// system log</div>
+      <div class="log-area" id="log"></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  let connected = false;
+  let statusInterval = null;
+  let uptimeStart = null;
+  let uptimeTick = null;
+  let seamVisible = false;
+
+  const $ = id => document.getElementById(id);
+
+  function log(msg, type='info') {
+    const entry = document.createElement('div');
+    entry.className = 'log-entry ' + type;
+    const ts = new Date().toTimeString().slice(0,8);
+    entry.textContent = `[${ts}] ${msg}`;
+    $('log').prepend(entry);
+    while ($('log').children.length > 50) $('log').lastChild.remove();
+  }
+
+  function setPill(id, ok) {
+    const el = $(id);
+    el.className = 'status-pill ' + (ok ? 'ok' : 'err');
+  }
+
+  function getBase() {
+    return $('server-url').value.replace(/\/$/, '');
+  }
+
+  function connectStream() {
+    const base = getBase();
+    const img = $('stream-img');
+    img.src = base + '/stream?' + Date.now();
+    img.style.display = 'block';
+    $('no-stream').style.display = 'none';
+    connected = true;
+    uptimeStart = Date.now();
+    log('Connecting to ' + base + '/stream', 'info');
+
+    if (statusInterval) clearInterval(statusInterval);
+    statusInterval = setInterval(fetchStatus, 1500);
+
+    if (uptimeTick) clearInterval(uptimeTick);
+    uptimeTick = setInterval(() => {
+      const s = Math.floor((Date.now() - uptimeStart) / 1000);
+      const m = Math.floor(s / 60);
+      $('m-uptime').textContent = m > 0 ? `${m}m${s%60}s` : `${s}s`;
+    }, 1000);
+  }
+
+  function disconnectStream() {
+    $('stream-img').src = '';
+    $('stream-img').style.display = 'none';
+    $('no-stream').style.display = 'block';
+    connected = false;
+    if (statusInterval) { clearInterval(statusInterval); statusInterval = null; }
+    if (uptimeTick) { clearInterval(uptimeTick); uptimeTick = null; }
+    setPill('pill-stream', false);
+    setPill('pill-server', false);
+    $('m-fps').textContent = '—';
+    $('m-mode').textContent = '—';
+    $('badge-l').className = 'cam-badge off'; $('badge-l').textContent = 'OFFLINE';
+    $('badge-r').className = 'cam-badge off'; $('badge-r').textContent = 'OFFLINE';
+    log('Disconnected', 'err');
+  }
+
+  function onStreamLoad() {
+    setPill('pill-stream', true);
+    const img = $('stream-img');
+    $('m-res').textContent = img.naturalWidth ? img.naturalWidth + 'p' : '—';
+    $('hud').textContent = 'LIVE';
+    log('Stream active', 'ok');
+  }
+
+  function onStreamError() {
+    if (!connected) return;
+    setPill('pill-stream', false);
+    log('Stream error — retrying...', 'err');
+    setTimeout(() => {
+      if (connected) {
+        $('stream-img').src = getBase() + '/stream?' + Date.now();
+      }
+    }, 2000);
+  }
+
+  async function fetchStatus() {
+    try {
+      const r = await fetch(getBase() + '/status', { signal: AbortSignal.timeout(2000) });
+      const d = await r.json();
+      setPill('pill-server', true);
+      $('m-fps').textContent = d.fps || '0';
+      $('m-mode').textContent = d.demo_mode ? 'DEMO' : 'LIVE';
+
+      const setbadge = (id, ok) => {
+        const el = $(id);
+        el.className = 'cam-badge ' + (ok ? 'ok' : 'off');
+        el.textContent = ok ? 'ONLINE' : 'OFFLINE';
+      };
+      setbadge('badge-l', d.left_ok);
+      setbadge('badge-r', d.right_ok);
+    } catch {
+      setPill('pill-server', false);
+    }
+  }
+
+  function takeSnapshot() {
+    const a = document.createElement('a');
+    a.href = getBase() + '/snapshot';
+    a.download = 'brahma_' + Date.now() + '.jpg';
+    a.target = '_blank';
+    a.click();
+    log('Snapshot saved', 'ok');
+  }
+
+  function toggleSeam() {
+    seamVisible = !seamVisible;
+    $('seam-line').style.display = seamVisible ? 'block' : 'none';
+    $('btn-seam').classList.toggle('active', seamVisible);
+    log('Seam line ' + (seamVisible ? 'on' : 'off'));
+  }
+
+  function toggleFullscreen() {
+    const v = $('viewer');
+    v.classList.toggle('fullscreen');
+    if (v.classList.contains('fullscreen')) {
+      document.addEventListener('keydown', e => { if(e.key==='Escape') v.classList.remove('fullscreen'); }, {once:true});
+    }
+  }
+
+  // Init
+  $('no-stream').style.display = 'block';
+  log('BRAHMA system ready', 'ok');
+  log('Enter server URL and press Connect', 'info');
+</script>
+</body>
+</html>
