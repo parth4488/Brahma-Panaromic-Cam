@@ -15,8 +15,8 @@ def add_cors(r):
 CAM_URLS = [
     "rtsp://admin:Admin%40123@192.168.1.133:554/unicaststream/4",   # CAM 1 — North
     "rtsp://admin:Admin%40123@192.168.1.132:554/unicaststream/4",   # CAM 2 — East
-    "rtsp://admin:Admin%40123@192.168.1.132:554/unicaststream/3",   # CAM 3 — South
-    "rtsp://admin:Admin%40123@192.168.1.133:554/unicaststream/3",   # CAM 4 — West
+    "rtsp://admin:Admin%40123@192.168.1.134:554/unicaststream/4",   # CAM 3 — South
+    "rtsp://admin:Admin%40123@192.168.1.135:554/unicaststream/4",   # CAM 4 — West
 ]
 CAM_NAMES = ["North", "East", "South", "West"]
 NUM_CAMS        = len(CAM_URLS)
